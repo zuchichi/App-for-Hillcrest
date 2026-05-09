@@ -1,4 +1,4 @@
-Here's exactly what Hillcrest want's, I recovered the email that they had originally sent our teacher:
+Here's exactly what Hillcrest wants, I recovered the email that they had originally sent our teacher:
 
 Hello Hannah,
 
