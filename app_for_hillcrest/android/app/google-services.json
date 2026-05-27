@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "854359163211",
+    "project_id": "hillcrest-ride-and-share",
+    "storage_bucket": "hillcrest-ride-and-share.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:854359163211:android:68b23dd1bc7dae5f9828ce",
+        "android_client_info": {
+          "package_name": "com.example.app_for_hillcrest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADdY5CZd8hktGMRtLWO30t3Z_G2hRS83M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
