@@ -49,6 +49,7 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
         title: 'Ride Accepted!',
         message: 'Your ride request for ${widget.ride.dateLabel} has been accepted by $driverName.',
         senderUid: _authService.currentUser?.uid ?? '',
+        targetUid: widget.ride.requesterUid, // Targeting the person who requested it
       );
     }
 

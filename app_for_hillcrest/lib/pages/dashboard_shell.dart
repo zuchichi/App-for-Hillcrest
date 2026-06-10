@@ -41,9 +41,16 @@ class _DashboardShellState extends State<DashboardShell> {
       if (snapshot.docs.isNotEmpty) {
         final doc = snapshot.docs.first;
         final data = doc.data() as Map<String, dynamic>;
+        final String? targetUid = data['targetUid'];
+        final String currentUid = _authService.currentUser?.uid ?? '';
         
+        // Show if: 
+        // 1. It's a global broadcast (targetUid is null)
+        // 2. It's targeted at the current user
+        bool shouldShow = (targetUid == null) || (targetUid == currentUid);
+
         // Don't show if it's the same message
-        if (doc.id != _lastBroadcastId) {
+        if (shouldShow && doc.id != _lastBroadcastId) {
           _lastBroadcastId = doc.id;
           _showBroadcastNotification(data['title'], data['message']);
           
