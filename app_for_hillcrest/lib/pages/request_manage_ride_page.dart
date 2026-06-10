@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../data/translations.dart';
 
 class RequestManageRidePage extends StatefulWidget {
   const RequestManageRidePage({super.key});
@@ -31,182 +32,187 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header section
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Text(
-                      'Request a Ride',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      // Section 1: Personal Info
-                      _buildFormSection(
-                        title: 'Personal Details',
-                        children: [
-                          _buildModernField(
-                            label: 'Your Full Name',
-                            controller: _nameController,
-                            icon: Icons.person_outline,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildModernField(
-                            label: 'Phone Number',
-                            controller: _phoneController,
-                            icon: Icons.phone_outlined,
-                            keyboardType: TextInputType.phone,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Section 2: Ride Details
-                      _buildFormSection(
-                        title: 'Ride Details',
-                        children: [
-                          _buildModernField(
-                            label: 'Date of ride (M/D/Y)',
-                            controller: _dateController,
-                            icon: Icons.calendar_today_outlined,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildModernField(
-                            label: 'Departure Address',
-                            controller: _fromController,
-                            icon: Icons.circle_outlined,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildModernField(
-                            label: 'Arrival Address',
-                            controller: _toController,
-                            icon: Icons.location_on_outlined,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Section 3: Preferences
-                      _buildFormSection(
-                        title: 'Preferences',
-                        children: [
-                          _buildModernDropdown(
-                            label: 'Reason For Ride',
-                            value: reason,
-                            icon: Icons.help_outline,
-                            items: const [
-                              'work',
-                              'medical appt',
-                              'dental appt',
-                              'school',
-                              'other'
-                            ],
-                            onChanged: (val) => setState(() => reason = val!),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildModernDropdown(
-                            label: 'Assigned Driver',
-                            value: pickupBy,
-                            icon: Icons.drive_eta_outlined,
-                            items: const [
-                              'Ms. Tupi - 832-128-4415',
-                              'Mr. Brewer - 816-555-1010',
-                              'Ms. Lani - 816-555-6700',
-                            ],
-                            onChanged: (val) => setState(() => pickupBy = val!),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      // Action Buttons
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Ride request submitted successfully.'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                              Navigator.pop(context);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryGreen,
-                            foregroundColor: Colors.white,
+    return ValueListenableBuilder(
+      valueListenable: TranslationService.currentLanguage,
+      builder: (context, lang, _) {
+        return Scaffold(
+          backgroundColor: AppTheme.background,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'Submit Request',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton.icon(
-                        onPressed: () {
-                          _formKey.currentState?.reset();
-                          _dateController.clear();
-                          _nameController.clear();
-                          _phoneController.clear();
-                          _fromController.clear();
-                          _toController.clear();
-                        },
-                        icon: const Icon(Icons.refresh_rounded, color: Colors.black45),
-                        label: const Text(
-                          'Clear Form',
-                          style: TextStyle(color: Colors.black45, fontWeight: FontWeight.w600),
+                        const SizedBox(width: 16),
+                        Text(
+                          TranslationService.translate('request_ride_title'),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // Section 1: Personal Info
+                          _buildFormSection(
+                            title: TranslationService.translate('personal_details'),
+                            children: [
+                              _buildModernField(
+                                label: TranslationService.translate('full_name'),
+                                controller: _nameController,
+                                icon: Icons.person_outline,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildModernField(
+                                label: TranslationService.translate('phone_number'),
+                                controller: _phoneController,
+                                icon: Icons.phone_outlined,
+                                keyboardType: TextInputType.phone,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Section 2: Ride Details
+                          _buildFormSection(
+                            title: TranslationService.translate('ride_details'),
+                            children: [
+                              _buildModernField(
+                                label: TranslationService.translate('ride_date'),
+                                controller: _dateController,
+                                icon: Icons.calendar_today_outlined,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildModernField(
+                                label: TranslationService.translate('departure_address'),
+                                controller: _fromController,
+                                icon: Icons.circle_outlined,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildModernField(
+                                label: TranslationService.translate('arrival_address'),
+                                controller: _toController,
+                                icon: Icons.location_on_outlined,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Section 3: Preferences
+                          _buildFormSection(
+                            title: TranslationService.translate('preferences_label'),
+                            children: [
+                              _buildModernDropdown(
+                                label: TranslationService.translate('reason_for_ride'),
+                                value: reason,
+                                icon: Icons.help_outline,
+                                items: const [
+                                  'work',
+                                  'medical appt',
+                                  'dental appt',
+                                  'school',
+                                  'other'
+                                ],
+                                onChanged: (val) => setState(() => reason = val!),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildModernDropdown(
+                                label: TranslationService.translate('assigned_driver'),
+                                value: pickupBy,
+                                icon: Icons.drive_eta_outlined,
+                                items: const [
+                                  'Ms. Tupi - 832-128-4415',
+                                  'Mr. Brewer - 816-555-1010',
+                                  'Ms. Lani - 816-555-6700',
+                                ],
+                                onChanged: (val) => setState(() => pickupBy = val!),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          // Action Buttons
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(TranslationService.translate('ride_submitted')),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryGreen,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                TranslationService.translate('submit_request'),
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextButton.icon(
+                            onPressed: () {
+                              _formKey.currentState?.reset();
+                              _dateController.clear();
+                              _nameController.clear();
+                              _phoneController.clear();
+                              _fromController.clear();
+                              _toController.clear();
+                            },
+                            icon: const Icon(Icons.refresh_rounded, color: Colors.black45),
+                            label: Text(
+                              TranslationService.translate('clear_form'),
+                              style: const TextStyle(color: Colors.black45, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

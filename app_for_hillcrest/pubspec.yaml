@@ -39,6 +39,7 @@ dependencies:
   cloud_firestore: ^6.0.1
   google_maps_flutter: ^2.12.3
   url_launcher: ^6.3.2
+  image_picker: ^1.0.7
   dio: ^4.0.0
   # flutter_polyline_points: ^0.2.6`
 

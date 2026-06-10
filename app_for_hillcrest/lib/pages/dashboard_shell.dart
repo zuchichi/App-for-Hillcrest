@@ -5,6 +5,7 @@ import '../models/ride_request.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/top_header.dart';
+import '../data/translations.dart';
 import 'calendar_page.dart';
 import 'home_page.dart';
 import 'map_page.dart';
@@ -37,86 +38,94 @@ class _DashboardShellState extends State<DashboardShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AppDrawer(),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            TopHeader(
-              onSearchChanged: (value) => setState(() => searchTerm = value),
-              hint: 'Search names & rides',
-            ),
-            Expanded(
-              child: IndexedStack(
-                index: currentTab,
-                children: [
-                  MapPage(rides: _filtered),
-                  HomePage(rides: _filtered),
-                  CalendarPage(rides: _filtered),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        color: AppTheme.background,
-        elevation: 0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return ValueListenableBuilder(
+      valueListenable: TranslationService.currentLanguage,
+      builder: (context, lang, _) {
+        return Scaffold(
+          drawer: const AppDrawer(),
+          body: SafeArea(
+            bottom: false,
+            child: Column(
               children: [
-                IconButton(
-                  onPressed: () => setState(() => currentTab = 0),
-                  icon: Icon(
-                    Icons.place_outlined,
-                    size: 30,
-                    color: currentTab == 0
-                        ? AppTheme.primaryGreen
-                        : Colors.black87,
-                  ),
+                TopHeader(
+                  onSearchChanged: (value) => setState(() => searchTerm = value),
+                  hint: TranslationService.translate('search_hint'),
                 ),
-                IconButton(
-                  onPressed: () => setState(() => currentTab = 1),
-                  icon: Icon(
-                    Icons.home_outlined,
-                    size: 30,
-                    color: currentTab == 1
-                        ? AppTheme.primaryGreen
-                        : Colors.black87,
+                Expanded(
+                  child: IndexedStack(
+                    index: currentTab,
+                    children: [
+                      MapPage(rides: _filtered),
+                      HomePage(rides: _filtered),
+                      CalendarPage(rides: _filtered),
+                    ],
                   ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => const RequestManageRidePage(),
-                    ),
-                  ),
-                  icon: const Icon(Icons.add_circle_outline, size: 30),
                 ),
               ],
             ),
-            const SizedBox(height: 2),
-            const Opacity(
-              opacity: .75,
-              child: Text(
-                'Hillcrest Platte County',
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 1.1,
-                  color: AppTheme.logoText,
-                  fontWeight: FontWeight.w700,
+          ),
+          bottomNavigationBar: BottomAppBar(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            color: AppTheme.background,
+            elevation: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: () => setState(() => currentTab = 0),
+                      icon: Icon(
+                        currentTab == 0 ? Icons.place : Icons.place_outlined,
+                        size: 26,
+                        color: currentTab == 0
+                            ? AppTheme.primaryGreen
+                            : Colors.black54,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => setState(() => currentTab = 1),
+                      icon: Icon(
+                        currentTab == 1 ? Icons.home_rounded : Icons.home_outlined,
+                        size: 26,
+                        color: currentTab == 1
+                            ? AppTheme.primaryGreen
+                            : Colors.black54,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const RequestManageRidePage(),
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.add,
+                        size: 28,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const Opacity(
+                  opacity: .75,
+                  child: Text(
+                    'Hillcrest Platte County',
+                    style: TextStyle(
+                      fontSize: 10,
+                      letterSpacing: 1.1,
+                      color: AppTheme.logoText,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

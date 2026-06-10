@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_theme.dart';
+import '../data/translations.dart';
 
 class HelpPage extends StatefulWidget {
   const HelpPage({super.key});
@@ -13,7 +15,7 @@ class HelpPage extends StatefulWidget {
 class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _messageController = TextEditingController();
-  String selectedAttachment = 'No file attached';
+  String? selectedAttachmentName;
 
   @override
   void initState() {
@@ -28,6 +30,17 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      setState(() {
+        selectedAttachmentName = image.name;
+      });
+    }
+  }
+
   Future<void> _sendSupportEmail() async {
     final body = Uri.encodeComponent(_messageController.text.trim());
     final uri = Uri.parse(
@@ -36,8 +49,8 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
     if (!await launchUrl(uri)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not open email app.'),
+        SnackBar(
+          content: Text(TranslationService.translate('email_error')),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -46,114 +59,125 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Modern Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+    return ValueListenableBuilder(
+      valueListenable: TranslationService.currentLanguage,
+      builder: (context, lang, _) {
+        return Scaffold(
+          backgroundColor: AppTheme.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Modern Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          TranslationService.translate('help_faq'),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    'Help & FAQ',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Tab Bar
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorColor: AppTheme.primaryGreen,
-                labelColor: AppTheme.primaryGreen,
-                unselectedLabelColor: Colors.black45,
-                indicatorSize: TabBarIndicatorSize.label,
-                indicatorWeight: 3,
-                tabs: const [
-                  Tab(text: 'FAQ'),
-                  Tab(text: 'Contact Us'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Tab View
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildFaqTab(),
-                  _buildContactTab(),
-                ],
-              ),
-            ),
-
-            // Developer Credit
-            const Padding(
-              padding: EdgeInsets.only(bottom: 16, top: 8),
-              child: Text(
-                'Developed by Uchechi Ejiogu and Soham Patel from PCHS',
-                style: TextStyle(
-                  color: Colors.black26,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
                 ),
-              ),
+
+                const SizedBox(height: 12),
+
+                // Tab Bar
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorColor: AppTheme.primaryGreen,
+                    labelColor: AppTheme.primaryGreen,
+                    unselectedLabelColor: Colors.black45,
+                    indicatorSize: TabBarIndicatorSize.tab, // Changed to tab to fill space
+                    indicatorWeight: 3,
+                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    splashBorderRadius: BorderRadius.circular(16),
+                    tabs: [
+                      Tab(text: TranslationService.translate('faq_tab')),
+                      Tab(text: TranslationService.translate('contact_tab')),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Tab View
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildFaqTab(),
+                      _buildContactTab(),
+                    ],
+                  ),
+                ),
+
+                // Developer Credit
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16, top: 8),
+                  child: Text(
+                    TranslationService.translate('developed_by'),
+                    style: const TextStyle(
+                      color: Colors.black26,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildFaqTab() {
     final faqs = [
       {
-        'q': 'How do I request a ride?',
-        'a': 'Go to the "Request Ride" section from the menu or the add button on the home screen. Fill in your details and submit.'
+        'q': TranslationService.translate('faq_q1'),
+        'a': TranslationService.translate('faq_a1')
       },
       {
-        'q': 'Is the ride service free?',
-        'a': 'Yes, Hillcrest Rides is a complimentary service for registered participants of our programs.'
+        'q': TranslationService.translate('faq_q2'),
+        'a': TranslationService.translate('faq_a2')
       },
       {
-        'q': 'What if my driver is late?',
-        'a': 'You can find your driver\'s phone number in the ride details on the home screen or map. Feel free to call them directly for an update.'
+        'q': TranslationService.translate('faq_q3'),
+        'a': TranslationService.translate('faq_a3')
       },
       {
-        'q': 'How do I cancel a ride?',
-        'a': 'To cancel a ride, please contact your assigned driver or call the Hillcrest office at least 2 hours in advance.'
+        'q': TranslationService.translate('faq_q4'),
+        'a': TranslationService.translate('faq_a4')
       },
       {
-        'q': 'Can I change my pickup time?',
-        'a': 'Changes to scheduled rides should be made by calling the support office or re-submitting a request with the updated information.'
+        'q': TranslationService.translate('faq_q5'),
+        'a': TranslationService.translate('faq_a5')
       },
     ];
 
@@ -206,24 +230,25 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildContactTab() {
+    final attachmentText = selectedAttachmentName ?? TranslationService.translate('no_file_attached');
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Get in touch',
-            style: TextStyle(
+          Text(
+            TranslationService.translate('get_in_touch'),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
               color: Colors.black87,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Have a specific issue or feedback? Send us a message and our support team will get back to you.',
-            style: TextStyle(
+          Text(
+            TranslationService.translate('contact_msg'),
+            style: const TextStyle(
               fontSize: 14,
               color: Colors.black54,
               height: 1.4,
@@ -249,7 +274,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                   controller: _messageController,
                   maxLines: 6,
                   decoration: InputDecoration(
-                    hintText: 'Describe your issue here...',
+                    hintText: TranslationService.translate('describe_issue'),
                     hintStyle: const TextStyle(color: Colors.black26),
                     filled: true,
                     fillColor: AppTheme.background.withOpacity(0.5),
@@ -262,11 +287,7 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                 ),
                 const SizedBox(height: 20),
                 InkWell(
-                  onTap: () {
-                    setState(() {
-                      selectedAttachment = 'photo_issue.jpg';
-                    });
-                  },
+                  onTap: _pickImage,
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -279,16 +300,16 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            selectedAttachment,
+                            attachmentText,
                             style: TextStyle(
-                              color: selectedAttachment == 'No file attached'
+                              color: selectedAttachmentName == null
                                   ? Colors.black45
                                   : Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
-                        if (selectedAttachment != 'No file attached')
+                        if (selectedAttachmentName != null)
                           const Icon(Icons.check_circle, color: AppTheme.primaryGreen, size: 20),
                       ],
                     ),
@@ -308,14 +329,14 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
                       ),
                       elevation: 0,
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.send_rounded, size: 18),
+                        const Icon(Icons.send_rounded, size: 18),
                         const SizedBox(width: 10),
                         Text(
-                          'Send to Support',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          TranslationService.translate('send_to_support'),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
@@ -328,12 +349,12 @@ class _HelpPageState extends State<HelpPage> with SingleTickerProviderStateMixin
           Center(
             child: Column(
               children: [
-                const Text(
-                  'Or call us directly at',
-                  style: TextStyle(color: Colors.black45, fontSize: 13),
+                Text(
+                  TranslationService.translate('call_us_directly'),
+                  style: const TextStyle(color: Colors.black45, fontSize: 13),
                 ),
                 const SizedBox(height: 4),
-                Text(
+                const Text(
                   '1-800-HILLCREST',
                   style: TextStyle(
                     color: AppTheme.primaryGreen,
