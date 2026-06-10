@@ -80,6 +80,13 @@ class TranslationService {
       'faq_a4': 'To cancel a ride, please contact your assigned driver or call the Hillcrest office at least 2 hours in advance.',
       'faq_q5': 'Can I change my pickup time?',
       'faq_a5': 'Changes to scheduled rides should be made by calling the support office or re-submitting a request with the updated information.',
+      'admin_options': 'Admin Options',
+      'manage_users': 'Manage Users',
+      'manage_users_sub': 'View and edit all registered accounts',
+      'app_stats': 'App Statistics',
+      'app_stats_sub': 'Monitor ride requests and system usage',
+      'broadcast': 'Broadcast Announcement',
+      'broadcast_sub': 'Send a notification to all users',
     },
     'American Spanish': {
       'settings': 'Ajustes',
@@ -157,6 +164,13 @@ class TranslationService {
       'faq_a4': 'Para cancelar un viaje, comuníquese con su conductor asignado o llame a la oficina de Hillcrest con al menos 2 horas de anticipación.',
       'faq_q5': '¿Puedo cambiar mi hora de recogida?',
       'faq_a5': 'Los cambios en los viajes programados deben realizarse llamando a la oficina de soporte o enviando una nueva solicitud con la información actualizada.',
+      'admin_options': 'Opciones de administrador',
+      'manage_users': 'Administrar usuarios',
+      'manage_users_sub': 'Ver y editar todas las cuentas registradas',
+      'app_stats': 'Estadísticas de la aplicación',
+      'app_stats_sub': 'Monitorear solicitudes de viaje y uso del sistema',
+      'broadcast': 'Emitir anuncio',
+      'broadcast_sub': 'Enviar una notificación a todos los usuarios',
     },
   };
 

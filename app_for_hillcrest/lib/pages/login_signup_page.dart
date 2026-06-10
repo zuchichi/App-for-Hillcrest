@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../services/auth_service.dart';
 import 'dashboard_shell.dart';
+import 'signup_page.dart';
 
 class LoginSignupPage extends StatefulWidget {
   const LoginSignupPage({super.key});
@@ -12,7 +14,11 @@ class LoginSignupPage extends StatefulWidget {
 
 class _LoginSignupPageState extends State<LoginSignupPage>
     with SingleTickerProviderStateMixin {
-  bool isSignUp = false;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  final AuthService _authService = AuthService();
+
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -44,13 +50,52 @@ class _LoginSignupPageState extends State<LoginSignupPage>
   @override
   void dispose() {
     _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _toggleMode() {
-    setState(() {
-      isSignUp = !isSignUp;
-    });
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    final error = await _authService.login(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+    setState(() => _isLoading = false);
+
+    if (error == null) {
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute<void>(builder: (_) => const DashboardShell()),
+          (_) => false,
+        );
+      }
+    } else {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Login Failed', style: TextStyle(fontWeight: FontWeight.w800)),
+            content: const Text('Wrong email or password. Please check your credentials and try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK', style: TextStyle(color: AppTheme.primaryGreen, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -80,33 +125,27 @@ class _LoginSignupPageState extends State<LoginSignupPage>
                       ),
                     ),
                     const SizedBox(height: 32),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Column(
-                        key: ValueKey<bool>(isSignUp),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isSignUp ? 'Create Account' : 'Authentication',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.black87,
-                            ),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Authentication',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isSignUp
-                                ? 'Fill in your details to get started'
-                                : 'Sign in to continue to Hillcrest Rides',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Sign in to continue to Hillcrest Rides',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 40),
                     Container(
@@ -125,46 +164,23 @@ class _LoginSignupPageState extends State<LoginSignupPage>
                       child: Column(
                         children: [
                           TextField(
+                            controller: _emailController,
                             decoration: _fieldDecoration(
-                                'Username', Icons.person_outline),
+                                'Email', Icons.mail_outline),
                           ),
                           const SizedBox(height: 18),
-                          if (isSignUp) ...[
-                            TextField(
-                              decoration: _fieldDecoration(
-                                  'Email', Icons.mail_outline),
-                            ),
-                            const SizedBox(height: 18),
-                          ],
                           TextField(
+                            controller: _passwordController,
                             obscureText: true,
                             decoration: _fieldDecoration(
                                 'Password', Icons.lock_outline),
                           ),
-                          if (isSignUp) ...[
-                            const SizedBox(height: 18),
-                            TextField(
-                              obscureText: true,
-                              decoration: _fieldDecoration(
-                                'Confirm Password',
-                                Icons.lock_reset_outlined,
-                              ),
-                            ),
-                          ],
                           const SizedBox(height: 32),
                           SizedBox(
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => const DashboardShell(),
-                                  ),
-                                  (_) => false,
-                                );
-                              },
+                              onPressed: _isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryGreen,
                                 foregroundColor: Colors.white,
@@ -173,13 +189,15 @@ class _LoginSignupPageState extends State<LoginSignupPage>
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
-                              child: Text(
-                                isSignUp ? 'Create Account' : 'Login',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                              child: _isLoading 
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                             ),
                           ),
                         ],
@@ -188,20 +206,25 @@ class _LoginSignupPageState extends State<LoginSignupPage>
                     const SizedBox(height: 32),
                     Center(
                       child: TextButton(
-                        onPressed: _toggleMode,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => const SignupPage(),
+                            ),
+                          );
+                        },
                         child: RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
+                          text: const TextSpan(
+                            style: TextStyle(
                                 color: Colors.black54, fontSize: 15),
                             children: [
                               TextSpan(
-                                text: isSignUp
-                                    ? 'Already have an account? '
-                                    : 'Need an account? ',
+                                text: 'Need an account? ',
                               ),
                               TextSpan(
-                                text: isSignUp ? 'Login' : 'Sign up',
-                                style: const TextStyle(
+                                text: 'Sign up',
+                                style: TextStyle(
                                   color: AppTheme.primaryGreen,
                                   fontWeight: FontWeight.w700,
                                 ),

@@ -23,7 +23,8 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     // Check if we are on an unsupported platform (Linux/Windows/macOS)
-    final bool isDesktop = !kIsWeb && (Platform.isLinux || Platform.isWindows || Platform.isMacOS);
+    final bool isDesktop = !kIsWeb &&
+        (Platform.isLinux || Platform.isWindows || Platform.isMacOS);
 
     final pins = <Marker>{};
     for (final ride in widget.rides) {
@@ -54,16 +55,16 @@ class _MapPageState extends State<MapPage> {
           children: [
             Expanded(
               flex: 6,
-              child: isDesktop 
-                ? _buildDesktopPlaceholder() // Show this on Linux
-                : GoogleMap(
-                    initialCameraPosition: const CameraPosition(
-                      target: LatLng(39.0458, -94.5966),
-                      zoom: 11.5,
-                    ),
-                    markers: pins,
-                    onMapCreated: (controller) => mapController = controller,
-                  ),
+              child: isDesktop
+                  ? _buildDesktopPlaceholder() // Show this on Linux
+                  : GoogleMap(
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(39.0458, -94.5966),
+                  zoom: 11.5,
+                ),
+                markers: pins,
+                onMapCreated: (controller) => mapController = controller,
+              ),
             ),
             Expanded(
               flex: 4,
@@ -73,37 +74,38 @@ class _MapPageState extends State<MapPage> {
                 padding: const EdgeInsets.all(16),
                 child: selectedRide == null
                     ? Center(
-                        child: Text(
-                          TranslationService.translate('map_tap_pin'),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      )
+                  child: Text(
+                    TranslationService.translate('map_tap_pin'),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                )
                     : SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              selectedRide!.participantName,
-                              style: const TextStyle(
-                                fontSize: 42,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _detailRow(Icons.calendar_month, selectedRide!.dateLabel),
-                            _detailRow(Icons.call_outlined, selectedRide!.phone),
-                            _detailRow(Icons.arrow_forward, selectedRide!.fromAddress),
-                            _detailRow(Icons.arrow_back, selectedRide!.toAddress),
-                            _detailRow(Icons.access_time, selectedRide!.pickupTime),
-                            _detailRow(Icons.help_outline, selectedRide!.reason),
-                            _detailRow(
-                              Icons.person_outline,
-                              '${selectedRide!.driverName} will pick you up',
-                            ),
-                            _detailRow(Icons.phone, selectedRide!.driverPhone),
-                          ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedRide!.participantName,
+                        style: const TextStyle(
+                          fontSize: 42,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      _detailRow(Icons.calendar_month, selectedRide!.dateLabel),
+                      _detailRow(Icons.call_outlined, selectedRide!.phone),
+                      _detailRow(
+                          Icons.arrow_forward, selectedRide!.fromAddress),
+                      _detailRow(Icons.arrow_back, selectedRide!.toAddress),
+                      _detailRow(Icons.access_time, selectedRide!.pickupTime),
+                      _detailRow(Icons.help_outline, selectedRide!.reason),
+                      _detailRow(
+                        Icons.person_outline,
+                        '${selectedRide!.driverName} will pick you up',
+                      ),
+                      _detailRow(Icons.phone, selectedRide!.driverPhone),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -123,7 +125,9 @@ class _MapPageState extends State<MapPage> {
             const SizedBox(height: 16),
             const Text(
               'Map Preview',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.black45),
+              style: TextStyle(fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black45),
             ),
             const SizedBox(height: 8),
             Text(
@@ -135,10 +139,11 @@ class _MapPageState extends State<MapPage> {
             // Still allow interaction with the rides list for testing
             Wrap(
               spacing: 10,
-              children: widget.rides.take(3).map((ride) => ActionChip(
-                label: Text(ride.participantName),
-                onPressed: () => setState(() => selectedRide = ride),
-              )).toList(),
+              children: widget.rides.take(3).map((ride) =>
+                  ActionChip(
+                    label: Text(ride.participantName),
+                    onPressed: () => setState(() => selectedRide = ride),
+                  )).toList(),
             )
           ],
         ),

@@ -4,8 +4,8 @@ import '../models/user_model.dart';
 import '../data/translations.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+  FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   // Get current user
   User? get currentUser => _auth.currentUser;
@@ -147,6 +147,23 @@ class AuthService {
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
+    }
+  }
+
+  // Update user language
+  Future<String?> updateUserLanguage(String language) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) return 'No user logged in';
+
+      await _db.collection('users').doc(user.uid).update({
+        'selectedLanguage': language,
+      });
+      
+      TranslationService.currentLanguage.value = language;
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 }

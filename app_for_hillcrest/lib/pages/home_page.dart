@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/ride_request.dart';
+import '../models/user_model.dart';
 import '../theme/app_theme.dart';
 import '../data/translations.dart';
+import '../services/auth_service.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.rides});
@@ -18,114 +20,122 @@ class HomePage extends StatelessWidget {
     }
     final names = byName.keys.toList()..sort();
 
-    return ValueListenableBuilder(
-      valueListenable: TranslationService.currentLanguage,
-      builder: (context, lang, _) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Header Section
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return StreamBuilder<UserModel?>(
+      stream: AuthService().userModelStream,
+      builder: (context, userSnapshot) {
+        final user = userSnapshot.data;
+        final displayName = user?.fullName ?? TranslationService.translate('driver');
+
+        return ValueListenableBuilder(
+          valueListenable: TranslationService.currentLanguage,
+          builder: (context, lang, _) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Header Section
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              TranslationService.translate('welcome_back'),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  TranslationService.translate('welcome_back'),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  displayName,
+                                  style: const TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              TranslationService.translate('driver'),
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black87,
+                            Container(
+                              height: 50,
+                              width: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                  )
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              child: Image.asset(
+                                'lib/assets/hillcrest-logo.png',
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ],
                         ),
-                        Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                              )
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child: Image.asset(
-                            'lib/assets/hillcrest-logo.png',
-                            fit: BoxFit.contain,
+                        const SizedBox(height: 24),
+                        // Stats Row
+                        Row(
+                          children: [
+                            _buildStatCard(
+                              TranslationService.translate('total_rides'),
+                              rides.length.toString(),
+                              Icons.directions_car_filled_rounded,
+                              Colors.blueAccent,
+                            ),
+                            const SizedBox(width: 16),
+                            _buildStatCard(
+                              TranslationService.translate('assigned'),
+                              rides.where((r) => r.status == RideStatus.assigned).length.toString(),
+                              Icons.check_circle_rounded,
+                              AppTheme.primaryGreen,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          TranslationService.translate('upcoming_schedule'),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
                           ),
                         ),
+                        const SizedBox(height: 16),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    // Stats Row
-                    Row(
-                      children: [
-                        _buildStatCard(
-                          TranslationService.translate('total_rides'),
-                          rides.length.toString(),
-                          Icons.directions_car_filled_rounded,
-                          Colors.blueAccent,
-                        ),
-                        const SizedBox(width: 16),
-                        _buildStatCard(
-                          TranslationService.translate('assigned'),
-                          rides.where((r) => r.status == RideStatus.assigned).length.toString(),
-                          Icons.check_circle_rounded,
-                          AppTheme.primaryGreen,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      TranslationService.translate('upcoming_schedule'),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
+                  ),
 
-              // Rides List
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final name = names[index];
-                    final rideList = byName[name]!;
-                    return _buildParticipantGroup(name, rideList);
-                  },
-                  childCount: names.length,
-                ),
+                  // Rides List
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final name = names[index];
+                        final rideList = byName[name]!;
+                        return _buildParticipantGroup(name, rideList);
+                      },
+                      childCount: names.length,
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
-          ),
+            );
+          },
         );
-      },
+      }
     );
   }
 

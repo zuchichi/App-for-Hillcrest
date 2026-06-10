@@ -87,7 +87,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     ListTile(
                       title: Text('Date: ${ride.dateLabel}'),
                       subtitle: Text(
-                        'Driver: ${ride.driverName}\n'
+                        'Driver: ${ride.driverName ?? "Unassigned"}\n'
                         'From: ${ride.fromAddress}\n'
                         'To: ${ride.toAddress}\n'
                         'Reason: ${ride.reason}',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/translations.dart';
+import '../services/auth_service.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -13,6 +14,39 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _currentController = TextEditingController();
   final _newController = TextEditingController();
   final _confirmController = TextEditingController();
+  bool _isLoading = false;
+  final AuthService _authService = AuthService();
+
+  Future<void> _handleUpdatePassword() async {
+    if (_newController.text != _confirmController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    final error = await _authService.changePassword(
+      _currentController.text,
+      _newController.text,
+    );
+    setState(() => _isLoading = false);
+
+    if (error == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password updated successfully')),
+        );
+        Navigator.pop(context);
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error)),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +100,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: _isLoading ? null : _handleUpdatePassword,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primaryGreen,
                               foregroundColor: Colors.white,
@@ -75,10 +109,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               ),
                               elevation: 0,
                             ),
-                            child: Text(
-                              TranslationService.translate('update_password'),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : Text(
+                                    TranslationService.translate('update_password'),
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                                  ),
                           ),
                         ),
                       ],
