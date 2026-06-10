@@ -29,29 +29,46 @@ class NotificationService {
 
     await _localNotifications.initialize(initializationSettings);
 
-    // Listen for foreground messages
+    // Create high importance channel for Android
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      description: 'This channel is used for important admin broadcasts.',
+      importance: Importance.max,
+    );
+
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    // Listen for foreground Firebase Cloud Messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-
-      if (notification != null && android != null) {
-        _localNotifications.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'high_importance_channel',
-              'High Importance Notifications',
-              importance: Importance.max,
-              priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
-            ),
-            iOS: DarwinNotificationDetails(),
-          ),
-        );
+      if (notification != null) {
+        showLocalNotification(notification.title ?? 'Announcement', notification.body ?? '');
       }
     });
+  }
+
+  // Method to manually trigger a notification from the app
+  static Future<void> showLocalNotification(String title, String message) async {
+    const NotificationDetails details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'high_importance_channel',
+        'High Importance Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+    );
+
+    await _localNotifications.show(
+      DateTime.now().millisecond,
+      title,
+      message,
+      details,
+    );
   }
 
   static Future<String?> getToken() async {

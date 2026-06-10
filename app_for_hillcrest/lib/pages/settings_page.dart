@@ -7,6 +7,9 @@ import '../models/user_model.dart';
 import 'account_details_page.dart';
 import 'change_password_page.dart';
 import 'intro_page.dart';
+import 'manage_users_page.dart';
+import 'app_stats_page.dart';
+import 'broadcast_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -221,21 +224,30 @@ class _SettingsPageState extends State<SettingsPage> {
                                   title: TranslationService.translate('manage_users'),
                                   subtitle: TranslationService.translate('manage_users_sub'),
                                   iconColor: Colors.teal,
-                                  onTap: () {},
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const ManageUsersPage()),
+                                  ),
                                 ),
                                 _buildSettingsItem(
                                   icon: Icons.analytics_outlined,
                                   title: TranslationService.translate('app_stats'),
                                   subtitle: TranslationService.translate('app_stats_sub'),
                                   iconColor: Colors.indigo,
-                                  onTap: () {},
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const AppStatsPage()),
+                                  ),
                                 ),
                                 _buildSettingsItem(
                                   icon: Icons.campaign_outlined,
                                   title: TranslationService.translate('broadcast'),
                                   subtitle: TranslationService.translate('broadcast_sub'),
                                   iconColor: Colors.pinkAccent,
-                                  onTap: () {},
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const BroadcastPage()),
+                                  ),
                                 ),
                               ],
                             ),

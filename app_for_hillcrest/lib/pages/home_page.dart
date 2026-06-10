@@ -5,6 +5,7 @@ import '../models/user_model.dart';
 import '../theme/app_theme.dart';
 import '../data/translations.dart';
 import '../services/auth_service.dart';
+import 'ride_details_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.rides});
@@ -124,7 +125,7 @@ class HomePage extends StatelessWidget {
                       (context, index) {
                         final name = names[index];
                         final rideList = byName[name]!;
-                        return _buildParticipantGroup(name, rideList);
+                        return _buildParticipantGroup(context, name, rideList);
                       },
                       childCount: names.length,
                     ),
@@ -180,7 +181,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantGroup(String name, List<RideRequest> rideList) {
+  Widget _buildParticipantGroup(BuildContext context, String name, List<RideRequest> rideList) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,13 +197,13 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ),
-        ...rideList.map((ride) => _buildRideCard(ride)),
+        ...rideList.map((ride) => _buildRideCard(context, ride)),
         const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _buildRideCard(RideRequest ride) {
+  Widget _buildRideCard(BuildContext context, RideRequest ride) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -312,7 +313,14 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RideDetailsPage(ride: ride),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.chevron_right_rounded, color: Colors.black26),
               ),
             ],

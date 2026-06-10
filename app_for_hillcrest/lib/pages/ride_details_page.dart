@@ -18,6 +18,7 @@ class RideDetailsPage extends StatefulWidget {
 class _RideDetailsPageState extends State<RideDetailsPage> {
   late ConfettiController _confettiController;
   bool _isAccepting = false;
+  bool _locallyAccepted = false; // Prevents double acceptance
   final RideService _rideService = RideService();
   final AuthService _authService = AuthService();
   final BroadcastService _broadcastService = BroadcastService();
@@ -39,12 +40,10 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
 
     final userModel = await _authService.userModelStream.first;
     final driverName = userModel?.fullName ?? 'Hillcrest Driver';
-    // Using a placeholder phone number for the driver for now
     const driverPhone = '816-555-0199';
 
     await _rideService.acceptRide(widget.ride.id, driverName, driverPhone);
 
-    // Send a notification to the requester (using broadcast for now as a simple way to notify)
     if (widget.ride.requesterUid != null) {
       await _broadcastService.sendBroadcast(
         title: 'Ride Accepted!',
@@ -53,7 +52,11 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
       );
     }
 
-    setState(() => _isAccepting = false);
+    setState(() {
+      _isAccepting = false;
+      _locallyAccepted = true; // Update UI to hide button
+    });
+    
     _confettiController.play();
 
     if (mounted) {
@@ -64,14 +67,14 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      // Wait for confetti then pop? Or just stay
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final ride = widget.ride;
-    final bool isPending = ride.status == RideStatus.unassigned;
+    // Hide the button if the ride is already assigned OR if it was just accepted locally
+    final bool isPending = ride.status == RideStatus.unassigned && !_locallyAccepted;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -112,49 +115,25 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoSection(
-                          'Participant',
-                          ride.participantName,
-                          Icons.person_rounded,
-                        ),
+                        _buildInfoSection('Participant', ride.participantName, Icons.person_rounded),
                         const SizedBox(height: 16),
-                        _buildInfoSection(
-                          'Contact Info',
-                          ride.phone,
-                          Icons.phone_rounded,
-                        ),
+                        _buildInfoSection('Contact Info', ride.phone, Icons.phone_rounded),
                         const SizedBox(height: 16),
-                        _buildInfoSection(
-                          'Date & Time',
-                          '${ride.dateLabel}\nPickup: ${ride.pickupTime}',
-                          Icons.calendar_today_rounded,
-                        ),
+                        _buildInfoSection('Date & Time', '${ride.dateLabel}\nPickup: ${ride.pickupTime}', Icons.calendar_today_rounded),
                         const SizedBox(height: 16),
-                        _buildInfoSection(
-                          'Route',
-                          'From: ${ride.fromAddress}\nTo: ${ride.toAddress}',
-                          Icons.map_rounded,
-                        ),
+                        _buildInfoSection('Route', 'From: ${ride.fromAddress}\nTo: ${ride.toAddress}', Icons.map_rounded),
                         const SizedBox(height: 16),
-                        _buildInfoSection(
-                          'Reason',
-                          ride.reason,
-                          Icons.help_outline_rounded,
-                        ),
+                        _buildInfoSection('Reason', ride.reason, Icons.help_outline_rounded),
                         const SizedBox(height: 16),
                         _buildInfoSection(
                           'Status',
-                          ride.status == RideStatus.assigned ? 'Assigned' : 'Pending',
-                          ride.status == RideStatus.assigned ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
-                          color: ride.status == RideStatus.assigned ? AppTheme.primaryGreen : Colors.orange,
+                          (_locallyAccepted || ride.status == RideStatus.assigned) ? 'Assigned' : 'Pending',
+                          (_locallyAccepted || ride.status == RideStatus.assigned) ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
+                          color: (_locallyAccepted || ride.status == RideStatus.assigned) ? AppTheme.primaryGreen : Colors.orange,
                         ),
-                        if (ride.status == RideStatus.assigned) ...[
+                        if (_locallyAccepted || ride.status == RideStatus.assigned) ...[
                           const SizedBox(height: 16),
-                          _buildInfoSection(
-                            'Driver',
-                            ride.driverName ?? 'Unknown',
-                            Icons.drive_eta_rounded,
-                          ),
+                          _buildInfoSection('Driver', ride.driverName ?? 'You', Icons.drive_eta_rounded),
                         ],
                         const SizedBox(height: 40),
                         if (isPending)
@@ -166,17 +145,12 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryGreen,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                 elevation: 0,
                               ),
                               child: _isAccepting 
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text(
-                                    'Accept This Ride',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                                  ),
+                                : const Text('Accept This Ride', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                             ),
                           ),
                       ],
@@ -192,13 +166,7 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
               confettiController: _confettiController,
               blastDirectionality: BlastDirectionality.explosive,
               shouldLoop: false,
-              colors: const [
-                AppTheme.primaryGreen,
-                Colors.blue,
-                Colors.pink,
-                Colors.orange,
-                Colors.purple
-              ],
+              colors: const [AppTheme.primaryGreen, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
             ),
           ),
         ],
@@ -213,13 +181,7 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Row(
         children: [
@@ -236,24 +198,9 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black38,
-                    letterSpacing: 1.1,
-                  ),
-                ),
+                Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.black38, letterSpacing: 1.1)),
                 const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
+                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black87)),
               ],
             ),
           ),

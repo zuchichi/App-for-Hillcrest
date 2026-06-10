@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, debugPrint, TargetPlatform;
 import 'firebase_options.dart';
+import 'services/notification_service.dart';
 
 import 'app.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Handle background messages here if needed
+  await Firebase.initializeApp();
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +26,11 @@ void main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       firebaseAvailable = true;
+      
+      // Initialize notifications
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      await NotificationService.initialize();
+
     } catch (e) {
       debugPrint("Firebase initialization failed: $e");
     }

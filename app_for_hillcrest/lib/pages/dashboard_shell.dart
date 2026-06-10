@@ -6,6 +6,9 @@ import '../widgets/app_drawer.dart';
 import '../widgets/top_header.dart';
 import '../data/translations.dart';
 import '../services/ride_service.dart';
+import '../services/broadcast_service.dart';
+import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../data/sample_rides.dart';
 import 'calendar_page.dart';
 import 'home_page.dart';
@@ -23,6 +26,70 @@ class _DashboardShellState extends State<DashboardShell> {
   int currentTab = 1;
   String searchTerm = '';
   final RideService _rideService = RideService();
+  final BroadcastService _broadcastService = BroadcastService();
+  final AuthService _authService = AuthService();
+  String? _lastBroadcastId;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenForBroadcasts();
+  }
+
+  void _listenForBroadcasts() {
+    _broadcastService.latestBroadcasts.listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        final data = doc.data() as Map<String, dynamic>;
+        
+        // Don't show if it's the same message
+        if (doc.id != _lastBroadcastId) {
+          _lastBroadcastId = doc.id;
+          _showBroadcastNotification(data['title'], data['message']);
+          
+          // Also show a system-level phone notification
+          NotificationService.showLocalNotification(data['title'], data['message']);
+        }
+      }
+    });
+  }
+
+  void _showBroadcastNotification(String title, String message) {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Image.asset('lib/assets/hillcrest-logo.png', width: 30, height: 30),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Dismiss',
+              style: TextStyle(color: AppTheme.primaryGreen, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   List<RideRequest> _applyFilter(List<RideRequest> allRides) {
     if (searchTerm.trim().isEmpty) {
