@@ -32,99 +32,176 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(),
-        title: const Text('Request Ride'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Divider(color: AppTheme.primaryGreen, thickness: 1.5),
-              const SizedBox(height: 12),
-              _lineField('Date of ride M/D/Y', _dateController),
-              _lineField('Your Full Name', _nameController),
-              _lineField('Phone Number', _phoneController),
-              _lineField('Departure Address', _fromController),
-              _lineField('Arrival Address', _toController),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: reason,
-                decoration: const InputDecoration(labelText: 'Reason For Ride'),
-                items: const [
-                  DropdownMenuItem(value: 'work', child: Text('Work')),
-                  DropdownMenuItem(
-                    value: 'medical appt',
-                    child: Text('Medical appt'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'dental appt',
-                    child: Text('Dental appt'),
-                  ),
-                  DropdownMenuItem(value: 'school', child: Text('School')),
-                  DropdownMenuItem(value: 'other', child: Text('Other')),
-                ],
-                onChanged: (value) => setState(() => reason = value ?? reason),
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: pickupBy,
-                decoration: const InputDecoration(labelText: 'Pick Up By'),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Ms. Tupi - 832-128-4415',
-                    child: Text('Ms. Tupi - 832-128-4415'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Mr. Brewer - 816-555-1010',
-                    child: Text('Mr. Brewer - 816-555-1010'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'Ms. Lani - 816-555-6700',
-                    child: Text('Ms. Lani - 816-555-6700'),
-                  ),
-                ],
-                onChanged: (value) =>
-                    setState(() => pickupBy = value ?? pickupBy),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Ride request submitted successfully.',
-                            ),
-                          ),
-                        );
-                        Navigator.pop(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryGreen,
-                      foregroundColor: Colors.white,
+              // Header section
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
-                    child: const Text('Request Ride'),
+                    const SizedBox(width: 16),
+                    const Text(
+                      'Request a Ride',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Section 1: Personal Info
+                      _buildFormSection(
+                        title: 'Personal Details',
+                        children: [
+                          _buildModernField(
+                            label: 'Your Full Name',
+                            controller: _nameController,
+                            icon: Icons.person_outline,
+                          ),
+                          const SizedBox(height: 16),
+                          _buildModernField(
+                            label: 'Phone Number',
+                            controller: _phoneController,
+                            icon: Icons.phone_outlined,
+                            keyboardType: TextInputType.phone,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Section 2: Ride Details
+                      _buildFormSection(
+                        title: 'Ride Details',
+                        children: [
+                          _buildModernField(
+                            label: 'Date of ride (M/D/Y)',
+                            controller: _dateController,
+                            icon: Icons.calendar_today_outlined,
+                          ),
+                          const SizedBox(height: 16),
+                          _buildModernField(
+                            label: 'Departure Address',
+                            controller: _fromController,
+                            icon: Icons.circle_outlined,
+                          ),
+                          const SizedBox(height: 16),
+                          _buildModernField(
+                            label: 'Arrival Address',
+                            controller: _toController,
+                            icon: Icons.location_on_outlined,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Section 3: Preferences
+                      _buildFormSection(
+                        title: 'Preferences',
+                        children: [
+                          _buildModernDropdown(
+                            label: 'Reason For Ride',
+                            value: reason,
+                            icon: Icons.help_outline,
+                            items: const [
+                              'work',
+                              'medical appt',
+                              'dental appt',
+                              'school',
+                              'other'
+                            ],
+                            onChanged: (val) => setState(() => reason = val!),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildModernDropdown(
+                            label: 'Assigned Driver',
+                            value: pickupBy,
+                            icon: Icons.drive_eta_outlined,
+                            items: const [
+                              'Ms. Tupi - 832-128-4415',
+                              'Mr. Brewer - 816-555-1010',
+                              'Ms. Lani - 816-555-6700',
+                            ],
+                            onChanged: (val) => setState(() => pickupBy = val!),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Action Buttons
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Ride request submitted successfully.'),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryGreen,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Submit Request',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton.icon(
+                        onPressed: () {
+                          _formKey.currentState?.reset();
+                          _dateController.clear();
+                          _nameController.clear();
+                          _phoneController.clear();
+                          _fromController.clear();
+                          _toController.clear();
+                        },
+                        icon: const Icon(Icons.refresh_rounded, color: Colors.black45),
+                        label: const Text(
+                          'Clear Form',
+                          style: TextStyle(color: Colors.black45, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  IconButton(
-                    onPressed: () {
-                      _formKey.currentState?.reset();
-                      _dateController.clear();
-                      _nameController.clear();
-                      _phoneController.clear();
-                      _fromController.clear();
-                      _toController.clear();
-                    },
-                    icon: const Icon(Icons.delete_outline, size: 32),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -133,23 +210,96 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
     );
   }
 
-  Widget _lineField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Required';
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          labelText: label,
-          enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.black54),
+  Widget _buildFormSection({required String title, required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primaryGreen.withOpacity(0.8),
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: (value) => (value == null || value.trim().isEmpty) ? 'Required' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.black45, fontWeight: FontWeight.w500),
+        prefixIcon: Icon(icon, color: AppTheme.primaryGreen.withOpacity(0.7)),
+        filled: true,
+        fillColor: AppTheme.background.withOpacity(0.5),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      ),
+    );
+  }
+
+  Widget _buildModernDropdown({
+    required String label,
+    required String value,
+    required IconData icon,
+    required List<String> items,
+    required void Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      items: items
+          .map((i) => DropdownMenuItem(
+                value: i,
+                child: Text(i, style: const TextStyle(fontSize: 14)),
+              ))
+          .toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.black45, fontWeight: FontWeight.w500),
+        prefixIcon: Icon(icon, color: AppTheme.primaryGreen.withOpacity(0.7)),
+        filled: true,
+        fillColor: AppTheme.background.withOpacity(0.5),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       ),
     );
   }
