@@ -28,10 +28,20 @@ class RideService {
 
   // Accept a ride
   Future<void> acceptRide(String rideId, String driverName, String driverPhone) async {
-    await _db.collection('rides').doc(rideId).update({
+    final batch = _db.batch();
+    
+    final rideRef = _db.collection('rides').doc(rideId);
+    batch.update(rideRef, {
       'status': 'assigned',
       'driverName': driverName,
       'driverPhone': driverPhone,
     });
+
+    final statsRef = _db.collection('stats').doc('global');
+    batch.set(statsRef, {
+      'totalRidesGiven': FieldValue.increment(1),
+    }, SetOptions(merge: true));
+
+    await batch.commit();
   }
 }

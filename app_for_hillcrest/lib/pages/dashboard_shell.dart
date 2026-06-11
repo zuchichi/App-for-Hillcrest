@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/ride_request.dart';
 import '../theme/app_theme.dart';
@@ -29,6 +31,8 @@ class _DashboardShellState extends State<DashboardShell> {
   final BroadcastService _broadcastService = BroadcastService();
   final AuthService _authService = AuthService();
   String? _lastBroadcastId;
+  StreamSubscription? _broadcastSubscription;
+  final DateTime _sessionStartTime = DateTime.now();
 
   @override
   void initState() {
@@ -36,20 +40,35 @@ class _DashboardShellState extends State<DashboardShell> {
     _listenForBroadcasts();
   }
 
+  @override
+  void dispose() {
+    _broadcastSubscription?.cancel();
+    super.dispose();
+  }
+
   void _listenForBroadcasts() {
-    _broadcastService.latestBroadcasts.listen((snapshot) {
+    _broadcastSubscription = _broadcastService.latestBroadcasts.listen((snapshot) {
       if (snapshot.docs.isNotEmpty) {
         final doc = snapshot.docs.first;
         final data = doc.data() as Map<String, dynamic>;
+
+        final Timestamp? timestamp = data['timestamp'];
         final String? targetUid = data['targetUid'];
         final String currentUid = _authService.currentUser?.uid ?? '';
         
-        // Show if: 
-        // 1. It's a global broadcast (targetUid is null)
-        // 2. It's targeted at the current user
-        bool shouldShow = (targetUid == null) || (targetUid == currentUid);
+        // 1. Freshness Check: Only show if sent AFTER this session started
+        if (timestamp != null && timestamp.toDate().isBefore(_sessionStartTime)) {
+          return;
+        }
 
-        // Don't show if it's the same message
+        // 2. Targeted Check: 
+        // - If targetUid is null, it's global (everyone sees it)
+        // - If targetUid exists, ONLY that specific user sees it
+        bool isMe = (targetUid != null && targetUid == currentUid);
+        bool isGlobal = (targetUid == null);
+        bool shouldShow = isGlobal || isMe;
+
+        // 3. Duplicate Check
         if (shouldShow && doc.id != _lastBroadcastId) {
           _lastBroadcastId = doc.id;
           _showBroadcastNotification(data['title'], data['message']);

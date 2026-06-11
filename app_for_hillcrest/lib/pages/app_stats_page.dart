@@ -74,6 +74,12 @@ class AppStatsPage extends StatelessWidget {
                       color: Colors.redAccent,
                       query: (ref) => ref.where('status', isEqualTo: 'unassigned'),
                     ),
+                    _buildGlobalStatStream(
+                      field: 'totalRidesGiven',
+                      label: 'Total Rides Given',
+                      icon: Icons.stars_rounded,
+                      color: Colors.purpleAccent,
+                    ),
                   ],
                 ),
               ),
@@ -81,6 +87,54 @@ class AppStatsPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildGlobalStatStream({
+    required String field,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('stats').doc('global').snapshots(),
+      builder: (context, snapshot) {
+        String value = '0';
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          value = (data[field] ?? 0).toString();
+        }
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+              )
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

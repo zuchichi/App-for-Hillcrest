@@ -74,8 +74,12 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final ride = widget.ride;
+    final String currentUid = _authService.currentUser?.uid ?? '';
+    final bool isMyRide = ride.requesterUid == currentUid;
+
     // Hide the button if the ride is already assigned OR if it was just accepted locally
-    final bool isPending = ride.status == RideStatus.unassigned && !_locallyAccepted;
+    // OR if the current user is the one who requested it
+    final bool canAccept = ride.status == RideStatus.unassigned && !_locallyAccepted && !isMyRide;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -137,7 +141,7 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
                           _buildInfoSection('Driver', ride.driverName ?? 'You', Icons.drive_eta_rounded),
                         ],
                         const SizedBox(height: 40),
-                        if (isPending)
+                        if (canAccept)
                           SizedBox(
                             width: double.infinity,
                             height: 60,
@@ -152,6 +156,14 @@ class _RideDetailsPageState extends State<RideDetailsPage> {
                               child: _isAccepting 
                                 ? const CircularProgressIndicator(color: Colors.white)
                                 : const Text('Accept This Ride', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                            ),
+                          ),
+                        if (isMyRide && ride.status == RideStatus.unassigned)
+                          const Center(
+                            child: Text(
+                              'This is your request. You cannot accept your own ride.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.black45, fontWeight: FontWeight.w500),
                             ),
                           ),
                       ],

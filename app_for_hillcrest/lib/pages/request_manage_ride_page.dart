@@ -21,8 +21,7 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
   final _phoneController = TextEditingController();
   final _fromController = TextEditingController();
   final _toController = TextEditingController();
-  String reason = 'work';
-  String pickupBy = 'Ms. Tupi - 832-128-4415';
+  final _reasonController = TextEditingController();
   bool _isSubmitting = false;
 
   @override
@@ -32,6 +31,7 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
     _phoneController.dispose();
     _fromController.dispose();
     _toController.dispose();
+    _reasonController.dispose();
     super.dispose();
   }
 
@@ -50,9 +50,10 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
         fromAddress: _fromController.text,
         toAddress: _toController.text,
         phone: _phoneController.text,
-        reason: reason,
+        reason: _reasonController.text,
         status: RideStatus.unassigned,
         requesterUid: currentUser?.uid,
+        driverName: null,
         // Adding dummy coordinates for Platte City so it shows up on the map
         // Adding a small random offset so multiple requests don't overlap perfectly
         departureLocation: LatLng(
@@ -177,30 +178,10 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
                           _buildFormSection(
                             title: TranslationService.translate('preferences_label'),
                             children: [
-                              _buildModernDropdown(
+                              _buildModernField(
                                 label: TranslationService.translate('reason_for_ride'),
-                                value: reason,
+                                controller: _reasonController,
                                 icon: Icons.help_outline,
-                                items: const [
-                                  'work',
-                                  'medical appt',
-                                  'dental appt',
-                                  'school',
-                                  'other'
-                                ],
-                                onChanged: (val) => setState(() => reason = val!),
-                              ),
-                              const SizedBox(height: 16),
-                              _buildModernDropdown(
-                                label: TranslationService.translate('assigned_driver'),
-                                value: pickupBy,
-                                icon: Icons.drive_eta_outlined,
-                                items: const [
-                                  'Ms. Tupi - 832-128-4415',
-                                  'Mr. Brewer - 816-555-1010',
-                                  'Ms. Lani - 816-555-6700',
-                                ],
-                                onChanged: (val) => setState(() => pickupBy = val!),
                               ),
                             ],
                           ),
@@ -238,6 +219,7 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
                               _phoneController.clear();
                               _fromController.clear();
                               _toController.clear();
+                              _reasonController.clear();
                             },
                             icon: const Icon(Icons.refresh_rounded, color: Colors.black45),
                             label: Text(
@@ -316,37 +298,6 @@ class _RequestManageRidePageState extends State<RequestManageRidePage> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppTheme.primaryGreen, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      ),
-    );
-  }
-
-  Widget _buildModernDropdown({
-    required String label,
-    required String value,
-    required IconData icon,
-    required List<String> items,
-    required void Function(String?) onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      items: items
-          .map((i) => DropdownMenuItem(
-                value: i,
-                child: Text(i, style: const TextStyle(fontSize: 14)),
-              ))
-          .toList(),
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.black45, fontWeight: FontWeight.w500),
-        prefixIcon: Icon(icon, color: AppTheme.primaryGreen.withOpacity(0.7)),
-        filled: true,
-        fillColor: AppTheme.background.withOpacity(0.5),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       ),
